@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% from '_ui.html' import title, btn_link %}
+{% from 'components.html' import employee_card, employee_form %}
+{% block content %}
+<div class="space-y-4">
+  {% call title() %}Employees{% endcall %}
+  {% if edit is not none %}
+    {{ employee_form(edit, statuses) }}
+  {% else %}
+    {% call btn_link(url_for('pages.employees', edit='new')) %}Add employee{% endcall %}
+  {% endif %}
+  <div class="grid md:grid-cols-3 gap-4">{% for e in items %}{{ employee_card(e) }}{% endfor %}</div>
+  {% if not items %}<p class="text-gray-500">No employees yet. Add your first one.</p>{% endif %}
+</div>
+{% endblock %}

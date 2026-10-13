@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% from '_ui.html' import title, field_select %}
+{% from 'components.html' import timesheet_table %}
+{% block content %}
+<div class="space-y-4">
+  {% call title() %}Timesheet{% endcall %}
+  <form method="get">{{ field_select('Employee', 'employee', employee_options, who, onchange='this.form.submit()') }}</form>
+  {{ timesheet_table(rows, names) }}
+</div>
+{% endblock %}

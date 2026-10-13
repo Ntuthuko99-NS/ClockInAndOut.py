@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% from '_ui.html' import title, card, btn, field_input %}
+{% block content %}
+<div class="space-y-4">
+  {% call title() %}Settings{% endcall %}
+  {% call card() %}
+    <form method="post">
+      {{ field_input('Company name', 'company_name', f.company_name) }}
+      {{ field_input('Standard hours per day', 'standard_hours_per_day', f.standard_hours_per_day, type='number') }}
+      {{ field_input('Overtime after (hours per week)', 'overtime_threshold_hours', f.overtime_threshold_hours, type='number') }}
+      {{ field_input('Annual leave days', 'annual_leave_days', f.annual_leave_days, type='number') }}
+      {{ field_input('Sick leave days', 'sick_leave_days', f.sick_leave_days, type='number') }}
+      {{ field_input('Late grace (minutes)', 'late_grace_minutes', f.late_grace_minutes, type='number') }}
+      {% call btn() %}Save settings{% endcall %}{% if saved %}<span class="ml-2 text-sm text-emerald-700">Saved</span>{% endif %}
+    </form>
+  {% endcall %}
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% from '_ui.html' import title %}
+{% from 'components.html' import clock_widget, stat_card, active_employees, recent_activity, team_availability %}
+{% block content %}
+<div class="space-y-4">
+  {% call title() %}Dashboard{% endcall %}
+  {{ clock_widget(open_entry, 'dashboard') }}
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    {% for label, value in stats %}{{ stat_card(label, value) }}{% endfor %}
+  </div>
+  <div class="grid md:grid-cols-2 gap-4">
+    {{ active_employees(active, names) }}
+    {{ recent_activity(recent, names) }}
+  </div>
+  {{ team_availability(availability) }}
+</div>
+{% endblock %}

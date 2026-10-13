@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ntuthuko</title>
+  <!-- Tailwind via CDN for quick start; build it with the Tailwind CLI for production. -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div class="min-h-screen bg-gray-50 md:flex">
+  <nav class="md:w-52 bg-white border-r p-3 flex md:block gap-2 overflow-x-auto">
+    {% for to, label in nav_links %}
+      {% set active = request.path == to or (to != '/' and request.path.startswith(to ~ '/')) %}
+      <a href="{{ to }}" class="block px-3 py-2 rounded text-sm whitespace-nowrap {{ 'bg-emerald-700 text-white' if active else 'hover:bg-gray-100' }}">{{ label }}</a>
+    {% endfor %}
+  </nav>
+  <main class="flex-1 p-4 md:p-6 max-w-5xl">
+    {% for message in get_flashed_messages() %}
+      <p class="mb-3 text-sm text-red-700">{{ message }}</p>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+</body>
+</html>

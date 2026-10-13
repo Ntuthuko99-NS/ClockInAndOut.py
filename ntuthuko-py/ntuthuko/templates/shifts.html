@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% from '_ui.html' import title, card, btn %}
+{% from 'components.html' import shift_form %}
+{% block content %}
+<div class="space-y-4">
+  {% call title() %}Shifts{% endcall %}
+  {{ shift_form(employee_options, today) }}
+  {% for s in shifts %}
+    {% call card('flex justify-between items-center') %}
+      <span class="text-sm">{{ s.date }} {{ s.start_time }}-{{ s.end_time }}: {{ names.get(s.employee_id, '') }}</span>
+      <form method="post" action="{{ url_for('pages.shift_delete', id=s.id) }}">{% call btn('bg-red-700') %}Delete{% endcall %}</form>
+    {% endcall %}
+  {% endfor %}
+</div>
+{% endblock %}

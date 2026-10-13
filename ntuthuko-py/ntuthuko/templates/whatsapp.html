@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% from '_ui.html' import title, card, btn, field_input %}
+{% block content %}
+<div class="space-y-4">
+  {% call title() %}WhatsApp{% endcall %}
+  {% call card() %}
+    <form method="post">
+      <label class="flex items-center gap-2 text-sm mb-2"><input type="checkbox" name="whatsapp_enabled"{% if s.whatsapp_enabled %} checked{% endif %}>Enable WhatsApp notifications</label>
+      {{ field_input('Business number (with country code, e.g. 27821234567)', 'whatsapp_number', s.whatsapp_number) }}
+      <div class="flex gap-2 items-center">
+        {% call btn() %}Save WhatsApp settings{% endcall %}
+        {% if link %}<a class="text-sm underline" href="{{ link }}" target="_blank" rel="noreferrer">Open test chat</a>{% endif %}
+      </div>
+    </form>
+  {% endcall %}
+</div>
+{% endblock %}

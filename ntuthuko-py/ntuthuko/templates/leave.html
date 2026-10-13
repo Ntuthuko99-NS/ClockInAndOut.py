@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% from '_ui.html' import title %}
+{% from 'components.html' import leave_balance, leave_request_form, leave_calendar, leave_request_card %}
+{% block content %}
+<div class="space-y-4">
+  {% call title() %}Leave{% endcall %}
+  <div class="grid md:grid-cols-2 gap-4">{{ leave_balance(balance) }}{{ leave_request_form(leave_types, today) }}</div>
+  {{ leave_calendar(cal_label, cal_days) }}
+  <h2 class="font-medium">{{ 'All requests' if is_admin else 'My requests' }}</h2>
+  {% for r, employee in visible %}{{ leave_request_card(r, employee, is_admin) }}{% endfor %}
+</div>
+{% endblock %}

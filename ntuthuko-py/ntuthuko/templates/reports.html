@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% from '_ui.html' import title, card %}
+{% block content %}
+<div class="space-y-4">
+  {% call title() %}Reports{% endcall %}
+  {% call card() %}
+    <table class="w-full text-sm">
+      <thead><tr class="text-left border-b"><th class="py-2">Employee</th><th>Days worked</th><th>Total hours</th><th>Overtime hours</th></tr></thead>
+      <tbody>
+        {% for name, days, total, overtime in rows %}
+          <tr class="border-b"><td class="py-2">{{ name }}</td><td>{{ days }}</td><td>{{ '%.1f'|format(total) }}</td><td>{{ '%.1f'|format(overtime) }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if not rows %}<p class="text-sm text-gray-500">Add employees and time entries to see reports.</p>{% endif %}
+  {% endcall %}
+</div>
+{% endblock %}

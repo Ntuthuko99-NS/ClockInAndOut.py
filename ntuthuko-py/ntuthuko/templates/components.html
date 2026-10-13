@@ -1,0 +1,158 @@
+{# Port of src/components/*.jsx - each component is a macro. #}
+{% from '_ui.html' import card, btn, btn_link, field_input, field_select %}
+
+{% macro alert_panels(alerts) %}
+  {% if not alerts %}
+    <p class="text-sm text-gray-500">You have no alerts.</p>
+  {% else %}
+    {% for a in alerts %}
+      {% call card('flex justify-between items-center ' ~ ('opacity-60' if a.read else '')) %}
+        <div class="text-sm"><p>{{ a.message }}</p><p class="text-gray-500">{{ a.type }} - {{ a.created_date|localdatetime }}</p></div>
+        {% if not a.read %}
+          <form method="post" action="{{ url_for('pages.alert_read', id=a.id) }}">{% call btn() %}Mark as read{% endcall %}</form>
+        {% endif %}
+      {% endcall %}
+    {% endfor %}
+  {% endif %}
+{% endmacro %}
+
+{% macro clock_widget(open_entry, next_page) %}
+  {% call card('flex items-center justify-between') %}
+    <p class="text-sm text-gray-600">{% if open_entry %}Clocked in since {{ open_entry.clock_in|localtime }}{% else %}Not clocked in{% endif %}</p>
+    <form method="post" action="{{ url_for('pages.clock_punch') }}">
+      <input type="hidden" name="next" value="{{ next_page }}">
+      {% call btn() %}{{ 'Clock out' if open_entry else 'Clock in' }}{% endcall %}
+    </form>
+  {% endcall %}
+{% endmacro %}
+
+{% macro stat_card(label, value) %}
+  {% call card() %}<p class="text-sm text-gray-500">{{ label }}</p><p class="text-3xl font-semibold">{{ value }}</p>{% endcall %}
+{% endmacro %}
+
+{% macro active_employees(active, names) %}
+  {% call card() %}
+    <h2 class="font-medium mb-2">Clocked in now</h2>
+    {% if not active %}<p class="text-sm text-gray-500">Nobody is clocked in.</p>{% endif %}
+    {% for e in active %}<p class="text-sm">{{ names.get(e.employee_id, 'Unknown') }} since {{ e.clock_in|localtime }}</p>{% endfor %}
+  {% endcall %}
+{% endmacro %}
+
+{% macro recent_activity(recent, names) %}
+  {% call card() %}
+    <h2 class="font-medium mb-2">Recent activity</h2>
+    {% if not recent %}<p class="text-sm text-gray-500">No time entries yet.</p>{% endif %}
+    {% for e in recent %}<p class="text-sm">{{ names.get(e.employee_id, 'Unknown') }}: {{ 'clocked out' if e.clock_out else 'clocked in' }} at {{ (e.clock_out or e.clock_in)|localdatetime }}</p>{% endfor %}
+  {% endcall %}
+{% endmacro %}
+
+{% macro team_availability(rows) %}
+  {% call card() %}
+    <h2 class="font-medium mb-2">Team availability</h2>
+    {% for name, label, cls in rows %}<p class="text-sm flex justify-between"><span>{{ name }}</span><span class="{{ cls }}">{{ label }}</span></p>{% endfor %}
+  {% endcall %}
+{% endmacro %}
+
+{% macro employee_card(e) %}
+  {% call card() %}
+    <p class="font-medium">{{ e.full_name }}</p>
+    <p class="text-sm text-gray-600">{{ e.role }} {% if e.department %}- {{ e.department }}{% endif %}</p>
+    <p class="text-sm text-gray-600">{{ e.email }} {{ e.phone }}</p>
+    <div class="flex gap-2 mt-2">
+      <a href="{{ url_for('pages.employees', edit=e.id) }}" class="inline-block px-3 py-1.5 rounded bg-emerald-700 text-white text-sm">Edit</a>
+      <form method="post" action="{{ url_for('pages.employee_delete', id=e.id) }}">{% call btn('bg-red-700') %}Delete{% endcall %}</form>
+    </div>
+  {% endcall %}
+{% endmacro %}
+
+{% macro employee_form(initial, statuses) %}
+  {% call card() %}
+    <form method="post" action="{{ url_for('pages.employee_save') }}">
+      {% if initial.id %}<input type="hidden" name="id" value="{{ initial.id }}">{% endif %}
+      {{ field_input('Full name', 'full_name', initial.full_name, required=True) }}
+      {{ field_input('Email', 'email', initial.email, type='email', required=True) }}
+      {{ field_input('Phone', 'phone', initial.phone) }}
+      {{ field_input('Role', 'role', initial.role) }}
+      {{ field_input('Department', 'department', initial.department) }}
+      {{ field_input('Hourly rate', 'hourly_rate', initial.hourly_rate or '', type='number') }}
+      {{ field_select('Status', 'status', opts(statuses), initial.status or 'active') }}
+      <div class="flex gap-2">
+        {% call btn() %}Save employee{% endcall %}
+        <a href="{{ url_for('pages.employees') }}" class="inline-block px-3 py-1.5 rounded bg-gray-500 text-white text-sm">Cancel</a>
+      </div>
+    </form>
+  {% endcall %}
+{% endmacro %}
+
+{% macro leave_balance(balance) %}
+  {% call card() %}
+    <h2 class="font-medium mb-2">Leave balance</h2>
+    {% for label, remaining, total in balance %}<p class="text-sm flex justify-between"><span>{{ label }}</span><span>{{ remaining }} of {{ total }} days left</span></p>{% endfor %}
+  {% endcall %}
+{% endmacro %}
+
+{% macro leave_calendar(label, days) %}
+  {% call card() %}
+    <h2 class="font-medium mb-2">{{ label }}</h2>
+    <div class="grid grid-cols-7 gap-1 text-center text-sm">
+      {% for d, off in days %}<div class="border rounded p-1 {{ 'bg-amber-100' if off else '' }}">{{ d }}{% if off > 0 %}<span class="block text-xs">{{ off }} off</span>{% endif %}</div>{% endfor %}
+    </div>
+  {% endcall %}
+{% endmacro %}
+
+{% macro leave_request_card(r, employee, can_review) %}
+  {% call card('flex justify-between items-center') %}
+    <div class="text-sm">
+      <p class="font-medium">{{ employee.full_name }} - {{ r.leave_type }} ({{ r.days }} days)</p>
+      <p class="text-gray-600">{{ r.start_date }} to {{ r.end_date }} - {{ r.status }}</p>
+      {% if r.reason %}<p class="text-gray-600">{{ r.reason }}</p>{% endif %}
+    </div>
+    {% if can_review and r.status == 'pending' %}
+      <form method="post" action="{{ url_for('pages.leave_review', id=r.id) }}" class="flex gap-2">
+        <button name="status" value="approved" class="px-3 py-1.5 rounded bg-emerald-700 text-white text-sm">Approve</button>
+        <button name="status" value="rejected" class="px-3 py-1.5 rounded bg-red-700 text-white text-sm">Reject</button>
+      </form>
+    {% endif %}
+  {% endcall %}
+{% endmacro %}
+
+{% macro leave_request_form(leave_types, today) %}
+  {% call card() %}
+    <form method="post" action="{{ url_for('pages.leave_request') }}">
+      {{ field_select('Leave type', 'leave_type', opts(leave_types), 'annual') }}
+      {{ field_input('From', 'start_date', today, type='date', required=True) }}
+      {{ field_input('To', 'end_date', today, type='date', required=True) }}
+      {{ field_input('Reason', 'reason') }}
+      {% call btn() %}Request leave{% endcall %}
+    </form>
+  {% endcall %}
+{% endmacro %}
+
+{% macro shift_form(employee_options, today) %}
+  {% call card() %}
+    <form method="post" action="{{ url_for('pages.shift_create') }}">
+      {{ field_select('Employee', 'employee_id', employee_options, '') }}
+      {{ field_input('Date', 'date', today, type='date', required=True) }}
+      {{ field_input('Start', 'start_time', '08:00', type='time', required=True) }}
+      {{ field_input('End', 'end_time', '17:00', type='time', required=True) }}
+      {{ field_input('Notes', 'notes') }}
+      {% call btn() %}Create shift{% endcall %}
+    </form>
+  {% endcall %}
+{% endmacro %}
+
+{% macro timesheet_table(rows, names) %}
+  <table class="w-full text-sm bg-white border rounded-lg">
+    <thead><tr class="text-left border-b"><th class="p-2">Employee</th><th>Date</th><th>In</th><th>Out</th><th>Hours</th></tr></thead>
+    <tbody>
+      {% for e in rows %}
+        <tr class="border-b">
+          <td class="p-2">{{ names.get(e.employee_id, '') }}</td>
+          <td>{{ e.date }}</td><td>{{ e.clock_in|localtime }}</td>
+          <td>{{ (e.clock_out|localtime) if e.clock_out else 'Still in' }}</td>
+          <td>{{ '%.2f'|format(e|entry_hours) }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endmacro %}

@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% from '_ui.html' import title %}
+{% from 'components.html' import alert_panels %}
+{% block content %}
+<div class="space-y-3">
+  {% call title() %}Alerts{% endcall %}
+  {{ alert_panels(alerts) }}
+</div>
+{% endblock %}

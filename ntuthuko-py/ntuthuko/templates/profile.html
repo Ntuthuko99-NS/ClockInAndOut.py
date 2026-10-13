@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% from '_ui.html' import title, card %}
+{% from 'components.html' import clock_widget %}
+{% block content %}
+<div class="space-y-4">
+  {% call title() %}My profile{% endcall %}
+  {% call card() %}
+    <p class="font-medium">{{ me.full_name }}</p>
+    <p class="text-sm text-gray-600">{{ me.email }} - {{ me.role }}</p>
+    <p class="text-sm mt-2">Total hours logged: {{ '%.1f'|format(total) }}</p>
+  {% endcall %}
+  {{ clock_widget(open_entry, 'profile') }}
+</div>
+{% endblock %}
